@@ -1,0 +1,50 @@
+There are a list of available jelly tags:
+
+
+<g:ui_table>           Put a table element on form
+<g:ui_spacer pixels="6"/> Put a span element on form with margin = <pixels>
+<g:ui_timezone_changer />               Display a select list of available time zones
+<g:ui_update_set_picker />               Display a select list of available update sets
+<g:ui_slushbucket up_down="true"/> Display a slushbucket with Add and Remove controls
+<g2:ui_select_option text="text" value="value" />           Display an option element with specified text and value
+<g:ui_checkbox name="new_checkbox" value="true"/>       Simple checkbox
+<g:ui_button action="save">${gs.getMessage('Save')}</g:ui_button>       Button
+<g:ui_date name="project_start_date" value="${sysparm_start_date}" />   Date picker
+<g:ui_date_time name="project_start_date" value="${jvar_start_date}"/>       DateTime picker
+<g:ui_input_field name="name" label="Name" value="value" size="100" />       Input field
+<g:ui_multiline_input_field name="message" label="Message" value="value" rows="5" /> Multiline Input
+<g:ui_choicelist class="form-control" name="myquantity" table="item" field="quantity" />   Choice list for a field from a table
+<g:ui_progress_worker worker_id="${sysparm_pworker_sysid}" show_cancel="false" rows="grow"/> Display a progress bar
+
+Display a reference table
+              <g:ui_reference name="parent_id" id="parent_id" table="pm_project" query="active=true"           completer="AJAXTableCompleter" columns="project_manager;short_description" orderby="orderby"/>
+
+
+
+
+
+Display a choice list for custom options
+              <g:ui_choice_input_field id="table_name_choice" name="table_name_choice" for="table_name_choice" label="${gs.getMessage('Table')}" mandatory="true">
+
+
+                          <option value="none">${gs.getMessage('-- None --')}</option>
+
+
+                          <option value="1">value 1</option>
+
+
+          </g:ui_choice_input_field>            
+
+
+
+Form with buttons OK and Cancel
+          <g:ui_form onsubmit="return callback('ok');">
+
+
+                      ...
+
+
+                      <g:dialog_buttons_ok_cancel ok="return true" />
+
+
+          </g:ui_form> 
