@@ -1,0 +1,326 @@
+Overview
+
+Apache's Jelly syntax is used to render forms, lists, UI pages, and many other things rendered in ServiceNow. With Jelly, logic can be embedded within static content and computed values may be inserted into the static content.
+Note
+	Note: This functionality requires a knowledge of Apache Jelly (a Java and XML based scripting and processing engine for turning XML into executable code).
+Namespaces
+
+In ServiceNow, Jelly often includes multiple namespaces when invoking tags. The “j” namespaces are standard Jelly whereas the “g” namespaces are unique to ServiceNow. For example, the <g:evaluate> tag is supplied by ServiceNow to allow you to compute a value using JavaScript. The standard Jelly tag <j:test> is used to evaluate a condition.
+Phases
+
+Usually, there are two phases indicated by namespaces <j> versus <j2> and <g> versus <g2>. The namespaces without the “2” happen in the first phase of processing and these are cached except when used in a UI page. Those with the “2” are never cached. Care must be taken when selecting whether to use phase 1 or phase 2 for efficiency and correct results.
+
+In addition to the namespaces, the syntax used to insert values into static content differs depending on which phase is to supply the value. A dollar with braces surrounding a value inserts the value in phase 1. For example, ${jvar_ref} inserts the value jvar_ref during phase 1 of the jelly process. A dollar with brackets surrounding a value inserts the value in phase 2. For example, $[jvar_ref] inserts the value jvar_ref during phase 2. A value surrounded by quotes is treated as a string. For example, '[jvar_ref]' inserts the value jvar_ref as a string during phase 2.
+
+<source lang="xml"> <script> if (confirm("$[gs.getMessage('home.delete.confirm') ]"))
+
+  ...
+
+</script> </source>
+
+
+<source lang="xml"> <input type="hidden" id="${jvar_name}" name="${jvar_name}" value="${jvar_value}" class="${jvar_class}" /> </source>
+If Tests
+
+Testing whether something is true or not can be done as follows: <source lang="xml"> <j:if test="${jvar_something}">...do something...</j:if> <j:if test="${!jvar_something}">...do something...</j:if> </source>
+
+The reason this works, is that, in Jelly, a term like jvar_something is "truthful" in an if tag if:
+
+    it is Boolean and true
+    it is a String and = "true", "yes", "on", or "1"
+
+
+Testing whether something exists can be done as follows: <source lang="xml"> <j:if test="${empty(jvar_something)}">...do something...</j:if> </source>
+
+The reason this works is that the jexl empty function returns true if its argument is:
+
+    null
+    an emptry string
+    a zero length collection
+    a map with no keys
+    an empty array
+
+Set_If
+
+Sets a variable to one of two different values depending on whether a test is true or false. <source lang="xml"> <g2:set_if var="jvar_style" test="$[gs.getPreference('table.compact') != 'false']"
+
+  true="margin-top:0px; margin-bottom:0px;" 
+  false="margin-top:2px; margin-bottom:2px;" />
+
+</source>
+<g:insert> Versus <g:inline> Versus <g:call>
+
+The <g:insert> tag inserts a Jelly file into your Jelly in a new context. This means you cannot access the variables previously established in your Jelly. The <g:inline> tag inserts a Jelly file into your Jelly in the same context. This means that the inserted Jelly can access the variables you previously established and it can change the values of those variables.
+
+<source lang="xml"> <g:insert template="get_target_form_function.xml" /> </source>
+
+<source lang="xml"> <g:inline template="element_default.xml" /> </source>
+<g:call>
+
+For better encapsulation, the <g:call> tag may be used. Your function will only have access to the values passed to it. The Jelly context will look the same after a call as before the call. This means you cannot set a global variable here and read it later. This also means you can't mistakenly set a global variable called "jvar_temp" and overwrite a variable that somebody else was relying on.
+
+Passing values, if needed, is done explicitly by including the name of the parameter on the <g:call> line followed by the equal sign followed by the value in quotes:
+
+<source lang="xml"> <g:call function="collapsing_image.xml" id="${jvar_section_id}" image="$[jvar_cimg]"
+
+  first_section_id="${jvar_first_section_id}" image_alt="${jvar_cimg_alt}"/>
+
+</source>
+
+If values are passed, and you want to have defaults or required parameters, your Jelly referenced in the function must then include a line to declare whether the parameters are required or have a default value:
+
+<source lang="xml"> <g:function id="REQUIRED" image="REQUIRED" image_prefix="" image_alt="REQUIRED"/> </source>
+
+The example above indicates that 3 of the parameter are required and one parameter is option with a blank default value. Note that if you are not passing values or if you do want to have default or required values, you do not need to include the <g:function> line at all. In general, however, you will want to include a <g:function> line.
+
+The value can then be referenced in your template by prepending the "jvar_" prefix to the parameter's name:
+
+<source lang="xml"> <img id="img.${jvar_id}" src="images/${jvar_image}" alt="${jvar_image_alt}"
+
+  onclick="toggleSectionDisplay('${jvar_id}', '${jvar_image_prefix}','${jvar_first_section_id}');"/>
+
+</source>
+
+For <g:call>, parameters may also be pass implicitly as a list of named variables in an "arguments" parameter:
+
+<source lang="xml">
+
+ <g:call function="item_link_default.xml" arguments="sysparm_view,ref_parent,jvar_target_text"/>
+
+</source> As an alternative to passing variables into the function via separate tag arguments, it is possible to pass a list of variables in a single 'arguments' argument. All variables identified by name (comma separated) in the argument parameter are re-introduced within the function under the exact same name (e.g. inside the function template, we'd have variables sysparm_view, ref_parent, and jvar_target_text available to us).
+
+The function template may return a value to the calling template using the return= attribute. Within the function the jvar_answer variable sets the return value.
+
+<source lang="xml">
+
+ <g:call function="item_body_cell_calc_style.xml" arguments="jvar_type" return="jvar_style"/>
+
+</source>
+<g:evaluate>
+
+The <g:evaluate> tag is used to evaluate an expression written in Rhino JavaScript and sometimes to set a variable to the value of the expression. The last statement in the expression is the value the variable will contain.
+
+<source lang="xml"> <g2:evaluate var="jvar_page" jelly="true">
+
+    var page = "";
+    var pageTitle = "";
+    var pageGR = new GlideRecord("cmn_schedule_page");
+    pageGR.addQuery("type", jelly.jvar_type");
+    pageGR.query();
+    if (pageGR.next()) {
+       page = pageGR.getValue("sys_id");
+       pageTitle = pageGR.getDisplayValue();
+    }
+    page;
+
+</g2:evaluate> </source>
+
+<source lang="xml"> <g2:evaluate var="not_important" expression="sc_req_item.popCurrent()"/> </source>
+object="true"
+
+If you would like to have the evaluate return an object (for example an array), use the argument object="true".
+Note
+	Note: This API call changed in the Calgary release:
+
+    SncRelationships replaces Packages.com.glideapp.ecmdb.Relationships 
+
+The new script object calls apply to the Calgary release and beyond. For releases prior to Calgary, substitute the packages call as described above. Packages calls are not valid beginning with the Calgary release. For more information, see Scripting API Changes.
+
+<source lang="xml"> <g2:evaluate object="true" var="jvar_items" expression="SncRelationships.getCMDBViews()" /> </source>
+jelly="true"
+
+If you would like to access Jelly variables inside an evaluate, include jelly="true" in the evaulate and add "jelly." before the Jelly variable's name.  For example, to access the GlideJellyContext:
+
+<source lang="xml"> <g2:evaluate var="jvar_row_no" jelly="true">
+
+  var gf = jelly.context.getGlideForm();
+  var row = gf.getRowNumber();
+  row;
+
+</g2:evaluate> </source>
+
+Another example of accessing a jvar using the jelly="true" parameter. The value of jvar_h was set previously and we can access it inside the evaluate: <source lang="xml"> $[NLBR:jvar_h.getHTMLValue('newvalue')] <g2:evaluate var="jvar_fix_escaping" jelly="true">
+
+   var auditValue = jelly.jvar_h.getHTMLValue('newvalue');
+   gs.log("************ " + auditValue);
+
+</g2:evaluate> </source>
+copyToPhase2="true"
+
+If you have a need to take the results of an evaluation that occurs in phase 1 and propagate it to phase 2, use copyToPhase2="true". There is some protection for escaping in this use. For example:
+
+<source lang="xml"> <g:evaluate var="jvar_has_special_inc" copyToPhase2="true">
+
+  var specialInc = gs.tableExists("special_incident");
+  specialInc;
+
+</g:evaluate> $[jvar_has_special_inc] </source>
+
+If you do not need to evaluate something, you can do this more directly. Beware of escaping issues here (double quotes in jvar_rows would cause a problem in the example): <source lang="xml"> <j2:set var="jvar_rows" value="${jvar_rows}"/> </source>
+<g:breakpoint/>
+
+This tag can be used to display the current Jelly variables and their values in the log. Be sure to remove this tag before going to production.
+<g:include_script/>
+
+In pre-Fuji releases, this tag can be used to include UI scripts for client side access to reusable javascript. For example, the jquery library is included as a UI script. To view this library, navigate to System UI > UI Scripts > jquery.min. To include this library in a UI page or macro, add <g:include_script src="jquery.min.jsdbx"/> to the jelly script. This example uses the name of the UI script with the extension .jsdbx appended.
+
+Starting with the Fuji release, you cannot use this include.
+<g:ui_form/>
+
+This tag defines a form on the UI page. For example, if your form contained the application_sys_id field:
+
+<source lang="javascript">
+
+<g:ui_form>
+
+Click OK to run the processing script.
+
+   <g:dialog_buttons_ok_cancel ok="return true" />
+   <input type="hidden" name="application_sys_id" value="499836460a0a0b1700003e7ad950b5da"/>
+</g:ui_form>
+
+</source>
+
+The g:ui_form may benefit greatly from a processing script.
+<g:ui_input_field />
+
+This tag adds a reference to a UI macro that creates an input field on a page that allows users to input information. The ui_input_field passes a label, name, value, and size into the UI macro. Here is an example from a UI page:
+
+<source lang="xml"> <g:ui_input_field label="sys_id" name="sysid" value="9d385017c611228701d22104cc95c371" size="50"/> </source>
+<g:ui_checkbox/>
+
+This tag puts a user-editable check mark on a page. The name and value are passed into the UI macro. Here is an example from a table on a UI page:
+
+<source lang="xml">
+
+         <label>Time Card Active:</label>
+
+	
+
+         <g:ui_checkbox name="timecard_active" value="${sysparm_timecard_active}"/>
+
+</source>
+<g:dialog_buttons_ok_cancel/>
+
+This tag puts buttons on the UI page that run a specified processing script if the tag returns true. If your UI page contains a form (uses the <g:form> tag), you can submit the form and have the Processing Script run. The Processing Script can naturally access fields on the form. For example, if your form contained the application_sys_id field:
+
+<source lang="javascript">
+
+<g:ui_form>
+
+Click OK to run the processing script.
+
+   <g:dialog_buttons_ok_cancel ok="return true" />
+   <input type="hidden" name="application_sys_id" value="499836460a0a0b1700003e7ad950b5da"/>
+</g:ui_form>
+
+</source>
+<g:ui_reference/>
+
+This tag adds a reference to a page that can be referenced by a Processing Script. The following example creates a reference defined by name, id, and table parameters in the tag: <source lang="xml"> <g:ui_reference name="QUERY:active=true^roles=itil" id="assigned_to" table="sys_user" /> </source>
+
+Then in the Processing Script, reference the name field like this:
+
+<source lang="xml"> newTask.assigned_to = request.getParameter("QUERY:active=true^roles=itil"); </source>
+
+Beginning with the Calgary release, this tag has been enhanced to allow you to specify a reference qualifier, so that the "name" attribute can be unique. The following example creates a reference defined by name, id, and table parameters in the tag. Note: the "columns" attribute only applies to the auto-completer.
+
+<source lang="xml"> <g:ui_reference name="parent_id" id="parent_id" table="pm_project" query="active=true" completer="AJAXTableCompleter" columns="project_manager;short_description"/> </source>
+Ampersand
+
+Ampersands in Jelly can cause you grief because Jelly is XML. Use ${AMP} to insert an ampersand in Jelly. If you are writing JavaScript that appears in the HTML part of say a UI page or UI macro that is actually going to run on the browser you are better off putting this code in the "client script" field and that way you can avoid escaping issues. However, if you really must put it in the "HTML" field, you will need to do something like this:
+
+<source lang="xml"> ta = ta[1].split('$[AMP]'); </source>
+And
+
+For the same reasons given for the ampersand, use ${AND} to insert a JavaScript and in Jelly. For example:
+
+<source lang="xml"> if (d ${AND} e)
+
+  var color = d.value;
+
+</source>
+
+
+Alternately, in a Jelly test you would use &amp&amp. For example:
+
+<source lang="xml"> <j:if test="${jvar_form_name == 'sys_form_template' && !RP.isDialog()}"> </source>
+Less Than
+
+Similar to ampersands, less than ("<") signs can also cause problems due to Jelly being XML. This can be resolved by reversing your test such that it is not necessary or by using ${AMP}lt; in place of the less than sign. For example in an evaluate you could do: <source lang="xml"> <g2:evaluate var="jvar_text">
+
+    var days = "";
+    var selectedDays = '$[${ref}]';
+    for (var i = 1; i ${AMP}lt;= 7; i++) {
+       if (selectedDays.indexOf(i.toString()) >= 0) {
+          days += gs.getMessage("dow" + i);
+          days += " ";
+       }
+    }
+    days;
+</g2:evaluate>
+
+</source>
+
+Many times you can avoid the "less than" operator all together by just using "not equals" which doesn't have escaping issues. For example: <source lang="xml"> for (var i=0; i != ta.length; i++) { } </source>
+Whitespace
+
+Normally, white space is removed by Jelly. To keep it, you must specify that it not be trimmed. For example, the following keeps the space after the colon.
+
+<source lang="xml"> <j2:whitespace trim="false">${gs.getMessage('Did you mean')}: </j2:whitespace> </source>
+Spaces
+
+To encode a non-breaking space (&nbsp;), you can use $[SP]. For example:
+
+<source lang="xml">
+
+   ${gs.getMessage('Domain')}:$[SP]
+   
+       ${gs.getMessage("Loading...")}
+  
+
+</source>
+RP
+
+An object, RP, has various methods available to you.  Here are a few of its methods:
+
+    RP.getReferringURL() - returns to URL that got you to this page.
+    RP.isDialog() - returns true if the page is in dialog mode
+    RP.isHomePage - returns true if the page is in home page mode
+    RP.isPrint() - returns true if the page is in print mode (user clicked the print button on the top banner)
+    RP.isMobile() - returns true if the page is in mobile mode (browsing using a Blackberry, etc.)
+    RP.getParameterValue(parameterName) - returns the value of the specified parameter passed on the URL
+    RP.getParameters() - returns the parameters passed on the URL
+    RP.getViewID() - returns the view in use
+
+An example of using RP.isPrint(): <source lang="xml"> <j:if test="${!RP.isPrint()}">
+
+  <a onclick="mailTo('${ref}');">
+     <img src="images/email.gifx" style="margin-left: 2px;" width="16" height="16"/>
+  </a>
+
+</j:if> </source>
+
+An example of using RP.getParameterValue(x) assuming a parameter was passed for "roles": <source lang="xml"> roles = "${RP.getParameterValue('roles')}"; </source>
+Tracing Jelly
+
+ServiceNow has a feature which allows the evaluation of Jelly to be traced. The trace is sent to the log. This should only be turned on during debugging as this produces a lot of logging.  To turn on the trace, set the property glide.ui.template.trace to true. For example, the following script can be executed to do this:
+Note
+	Note: This API call changed in the Calgary release:
+
+    GlideProperties replaces Packages.com.glide.util.GlideProperties 
+
+The new script object calls apply to the Calgary release and beyond. For releases prior to Calgary, substitute the packages call as described above. Packages calls are not valid beginning with the Calgary release. For more information, see Scripting API Changes.
+
+<source lang="javascript"> GlideProperties.set('glide.ui.template.trace', true); </source>
+
+If you want to see your log entries on your web browser at the bottom of each page, navigate to System Diagnostics > Debug Log.
+
+Standard Jelly
+
+This page from Apache has a summary of the standard Jelly tags: http://commons.apache.org/jelly/tags.html
+
+This PDF includes a nice summary of standard Jelly tags: http://www.softwaresummit.com/2003/speakers/GillardJelly.pdf
+Escaping Jelly
+Note
+	Note: This is an advanced procedure
