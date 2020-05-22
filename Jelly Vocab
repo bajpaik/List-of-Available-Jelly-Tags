@@ -1,0 +1,57 @@
+	1) GlideCollaborationCompatibility.isChatEnabled() $[AND] GlideCollaborationCompatibility.isFrameSetEnabled();
+	
+	2) GlideStringUtil.join(GlideSecurityManager.get().getRoles());
+	
+	3) <g:requires name="scripts/sn/common/glide/js_includes_glide.js" includes="true" />
+	
+	4) GlideAccessibility.isEnabled()
+	
+	5) gs.getProperty('glide.builddate')
+	
+	6)  var n = new GlideJellyRunner().runMacro(<ui macro name>)
+	
+	7) CustomEvent.observe('user.login', function(user) { 
+				if (user.hasRoleFromList('${gs.getProperty('glide.ui.can_search')}')) {
+					showObjectInline(gel("textsearch"));
+					CustomEvent.fire('adjustsearch');
+				} else {
+					hideObject(gel("textsearch"));
+				}
+			});
+			
+	8) <g:text_search_widget size="10"/>
+
+	9) <g:ui_date class="form-control" name="end_date" id="end_date" value="${jvar_extension_end_date}" />
+	
+	From <https://community.servicenow.com/community?id=community_question&sys_id=8a914769db98dbc01dcaf3231f96190d> 
+	
+	10)  <g:currency_format double="${jvar_item_price}" />
+	
+	11) Example of Passing value from g:evaluate tag to script tag:
+	<g:evaluate var="jvar_instructionSet" object='true' jelly="true">	
+			var ins = gs.getProperty("x_1e_core_connect.getDomainSepInsSet");
+			ins;
+		</g:evaluate>
+		
+	12) <g:include_script src="x_1e_connect.jqDataTable.jsdbx"/>
+	
+	13) <g:messages>
+	  Index creation successfully scheduled. If it completes successfully, the index will be added to your current update set "{0}".
+	  Please specify an email address
+	  An email will be sent to {0} upon completion. 
+	</g:messages>
+	
+	14) <g:ui_form> <g:ui_table> <g:ui_header>Attachments</g:ui_header> <g:ui_table><g:ui_form>
+	15) <g:ui_reference placeholder="Search Instructions" style="background-color: #EEEEEE" name="x_1e_connect_instruction_definition" id="x_1e_connect_instruction_definition" class="form-control instructionInputClass" table="x_1e_core_connect_instruction_definition" query="active=true^business_application_name=1E ITSM" completer="AJAXTableCompleter" onchange="showParameters()"/>
+	16) <g:messages>
+  Yes
+  No
+  Cancel
+</g:messages>
+	17)  <g:inline template="output_messages2.xml"/>
+	18) <g2:flow_formatter var="jvar_flows" table="$[${ref_parent}.getRecordClassName()]" current="$[${ref_parent}]" />
+	19) <g2:set_if var="jvar_step_status" test="$[jvar_flow.getParameter('state') == 'current']" true="step" false="false" />
+	20) <g:kb_reference_field id="article" label="${gs.getMessage('Select article')}" table="kb_knowledge" query="${articleQuery}"/>
+	21) <g:ui_choicelist id="answer_type_1" name='answer_type_1' table='incident' field='number' value="${jvar_incidents}"/>
+	22) <g:ui_date_time id= "${jvar_name}" value= "${jvar_name}" />
+<g:ui_date name="start_date"/>
