@@ -55,3 +55,10 @@
 	21) <g:ui_choicelist id="answer_type_1" name='answer_type_1' table='incident' field='number' value="${jvar_incidents}"/>
 	22) <g:ui_date_time id= "${jvar_name}" value= "${jvar_name}" />
 <g:ui_date name="start_date"/>
+
+        23) <g:list_default table="tm_test_case_instance" view="tm_sign_off" />
+	24) <g2:list_record_default properties="${ListProperties.serialize()}"
+fixedQuery="${tm_TestManagement.TEST_PLAN_FK}=${jvar_testPlan}^${tm_TestManagement.EXECUTION_STATUS}IN${tm_TestManagement.UNEXECUTED},${tm_TestManagement.INPROGRESS},${tm_TestManagement.FAILED},${tm_TestManagement.BLOCKED},${tm_TestManagement.RETEST}">
+                        <g:inline template="list2.xml" />
+                    </g2:list_record_default>
+       25)  <g:ui_button action="cancel">${gs.getMessage('Cancel')}</g:ui_button>
