@@ -5,6 +5,10 @@ There are a list of available jelly tags:
 <g:ui_spacer pixels="6"/> Put a span element on form with margin = <pixels>
 <g:ui_timezone_changer />               Display a select list of available time zones
 <g:ui_update_set_picker />               Display a select list of available update sets
+<g:ui_language_select />                  Display a select list of languages 
+<g:domain_select />                        Display a select list of domains
+<g:domain_reference_picker />               Display a reference field of domains
+<g:encryption_select />
 <g:ui_slushbucket up_down="true"/> Display a slushbucket with Add and Remove controls
 <g2:ui_select_option text="text" value="value" />           Display an option element with specified text and value
 <g:ui_checkbox name="new_checkbox" value="true"/>       Simple checkbox
