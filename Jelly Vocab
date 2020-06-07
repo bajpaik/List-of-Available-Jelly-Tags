@@ -95,4 +95,6 @@ title="${gs.getMessage('Open in PagerDuty')}"/>
 	                    </j2:otherwise>
 	                </j2:choose>
 	            </j2:if>
+    
+      32)<g:form_label for="sys_display.${jvar_id}"> ${jvar_label} </g:form_label>
 
