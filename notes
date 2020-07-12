@@ -1,3 +1,14 @@
-/*  1)  To move values from <script>, use "jelly.jvar_exampleValue" in <g:evaluate jelly="true"> </g:evaluate> 
+1)  <g:evaluate> tag inside <script>
+e.g. 
+	<script>
+	<g2:evaluate>
+		var instance = gs.getProperty('glide.servlet.uri')
+		</g2:evaluate>
+		<j2:set var="jvar_instance" value="$[instance]" ></j2:set>
+	
+	</script>
+	<div>
+	$[jvar_instance]
+	</div>
 
-*/
+
