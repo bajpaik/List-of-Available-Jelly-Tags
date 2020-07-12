@@ -6,7 +6,7 @@
 	
 	4) GlideAccessibility.isEnabled()
 	
-	5) gs.getProperty('glide.builddate')
+	5) gs.getProperty('glide.builddate'), gs.getProperty('glide.buildname'), gs.getProperty('glide.buildtag'), 
 	
 	6)  var n = new GlideJellyRunner().runMacro(<ui macro name>)
 	
