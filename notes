@@ -10,5 +10,12 @@ e.g.
 	<div>
 	$[jvar_instance]
 	</div>
+	
+2) Using gs.getSystemProperty inside <script> tag
+e.g. 
+        <script>
+	var a = '${gs.getProperty('x_1e_virtual_agent.instruction_reboot_action')}'
+        alert(a)
+	</script>
 
 
