@@ -97,4 +97,8 @@ title="${gs.getMessage('Open in PagerDuty')}"/>
 	            </j2:if>
     
       32)<g:form_label for="sys_display.${jvar_id}"> ${jvar_label} </g:form_label>
+      
+      33) 	<g2:tokenize var="jvar_c_list1" delim=",">
+			${gs.getProperty('glide.ui.per_page', '10,20,50,100')}
+		</g2:tokenize>
 
