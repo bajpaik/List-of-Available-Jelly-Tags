@@ -1,0 +1,42 @@
+1)  <g:evaluate> tag inside <script>
+
+	<script>
+	<g2:evaluate>
+		var instance = gs.getProperty('glide.servlet.uri')
+		</g2:evaluate>
+		<j2:set var="jvar_instance" value="$[instance]" ></j2:set>
+	
+	</script>
+	<div>
+	$[jvar_instance]
+	</div>
+	
+2) Using gs.getProperty inside <script> tag 
+e.g. 
+        <script>
+	var a = '${gs.getProperty('x_1e_virtual_agent.instruction_reboot_action')}'
+        alert(a)
+	</script>
+	
+3) Use of GlideEventHandler 
+e.g.
+<script>
+$j(function(){
+
+   var element = g_form.getElement('target_table');
+var elementName = element.name;
+	
+var onChangeHandler = new GlideEventHandler('targetTableChanged',setFilter ,elementName);
+g_event_handlers.push(onChangeHandler);
+
+function setFilter(control, oldValue, newValue, isLoading, isTemplate) {
+	if (isLoading || newValue == '') {
+      return;
+}
+g_form.addInfoMessage('newValue = ' + newValue);
+}
+
+})
+	</script>
+
+
