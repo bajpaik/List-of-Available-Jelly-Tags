@@ -101,4 +101,17 @@ title="${gs.getMessage('Open in PagerDuty')}"/>
       33) 	<g2:tokenize var="jvar_c_list1" delim=",">
 			${gs.getProperty('glide.ui.per_page', '10,20,50,100')}
 		</g2:tokenize>
+      
+      34) Using 'reflistOpen' function in UI MACRO opens a reference pop-up window after clicking on <a></a> tag.
+      SYNTAX : 
+                     function reflistOpen(target, elementName, refTableName, dependent, useQBE, refQualElements, additionalQual){
+                        var url = reflistOpenUrl(target, target, elementName, refTableName, dependent, useQBE, refQualElements, additionalQual);
+                        popupOpenStandard(url, "lookup");
+                    }
+      EXAMPLE : 
+                        function setSelectedSet(set) {
+			  if(!g_form.isNewRecord())
+			    var query=document.getElementById('1e_instruction_query').value+"^instruction_set="+set+'^';//set selected set in the query
+			    reflistOpen( 'x_1e_connect_instruction_definition', 'not', gel('x_1e_connect_instruction_definitionTABLE').value, '', 'false', 'QUERY:active=true^business_application_name=1E ITSM^', query, '');
+                       }
 
