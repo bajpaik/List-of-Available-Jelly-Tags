@@ -19,7 +19,8 @@ There are a list of available jelly tags:
 <g:ui_multiline_input_field name="message" label="Message" value="value" rows="5" /> Multiline Input
 <g:ui_choicelist class="form-control" name="myquantity" table="item" field="quantity" />   Choice list for a field from a table
 <g:ui_progress_worker worker_id="${sysparm_pworker_sysid}" show_cancel="false" rows="grow"/> Display a progress bar
-
+<g:get_distribution_list ref="${jvar_reference}" readonly="true" ensure="true" record="${jvar_list_data}" /> jvar_reference  where are we pulling our list from e.g. sys_user
+	  jvar_list_data  current value e.g. abc123,def456
 Display a reference table
               <g:ui_reference name="parent_id" id="parent_id" table="pm_project" query="active=true"           completer="AJAXTableCompleter" columns="project_manager;short_description" orderby="orderby"/>
 
