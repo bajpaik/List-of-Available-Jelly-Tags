@@ -88,3 +88,26 @@ function routeInteraction() {
         }
     });
 }
+
+/****************SCRIPT INCLUDE FUNCTION******************/
+ getQueueReasons: function(queueId) {
+        var reasonsList = '';
+        queueId = this.getParameter('sysparm_queueId');
+        if (gs.nil(queueId)) {
+            return reasonsList;
+        }
+
+        var reasonsRecord = new GlideRecord('wu_m2m_location_queue_reason');
+        reasonsRecord.addQuery('wu_location_queue', queueId);
+        reasonsRecord.addQuery('wu_reason.active', true);
+        reasonsRecord.orderBy('order');
+        reasonsRecord.query();
+
+        while (reasonsRecord.next()) {
+            reasonsList += reasonsRecord.getValue('wu_reason') + ',';
+        }
+        if (reasonsList.length > 0) {
+            reasonsList = reasonsList.slice(0, -1);
+        }
+        return 'sys_idIN' + reasonsList;
+    }
