@@ -3,60 +3,76 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <j:jelly xmlns:j="jelly:core" xmlns:g="glide" xmlns:j2="null" xmlns:g2="null">
     <g2:ui_form id="transfer_case_dialog">
+	<style>
+	.queue-select, .reason-select, .transfer-reason{
+		margin-top:5px;
+	}
+	</style>
 	<input id="selected-queue" type="hidden" value="${JS,HTML:queue}"></input>
 	<input id="selected-reason" type="hidden" value="${JS,HTML:reason}"></input>
+	<input id="selected-query" type="hidden" value="${JS,HTML:query}"></input>
                <!-- Define UI elements within the form -->
-        <div style="margin-bottom: 2px;">
-            <div class="col-md-12 queue">
-                <p style="font-size: 15px;">${gs.getMessage("Select Queue")}</p>
-                <g2:ui_reference name="location_queue" id="location_queue" table="wu_location_queue" completer="AJAXTableCompleter" query="active=true" onchange="showReasons(this)"/>
+        <div>
+            <div class="col-md-12 queue-select">
+                <label style="font-size: 15px;">${gs.getMessage("Select Queue")}</label>
+                <g2:ui_reference name="location_queue" id="location_queue" table="wu_location_queue" completer="AJAXTableCompleter" query="active=true" onchange="fetchReasons(this)"/>
             </div>
         </div>
         
-        <div style="margin-bottom: 2px;">
-            <div class="col-md-12 queue-reasons">
-                <p style="font-size: 15px;">${gs.getMessage("Select Reason")}</p>
+        <div>
+            <div class="col-md-12 reason-select">
+                <label style="font-size: 15px;">${gs.getMessage("Select Reason")}</label>
                 <g2:ui_reference name="reason_reference" id="reason_reference" 
-				table="wu_reason" completer="AJAXTableCompleter"/>
+				table="wu_reason" completer="AJAXTableCompleter"
+				onchange="setReason(this)"/>
             </div>
         </div>
-       
-        <div id="dialog_buttons" class="clearfix pull-right" style="margin-top:20px">
+		<div>
+		    <div id="dialog_buttons" class="clearfix pull-right" style="margin-top:20px">
             <button type="button" class="btn btn-primary disabled" aria-disabled="true" id="route-button" onclick="routeInteraction()" title="${gs.getMessage('Transfer details to new interaction')}">${gs.getMessage('Transfer')}</button>
+           </div>
         </div>
-
     </g2:ui_form>
 </j:jelly>
 
 //CLIENT SCRIPT
-function showReasons(element) {
+function fetchReasons(element) {
     var queueReferenceField = element.value;
     gel('selected-queue').value = queueReferenceField;
     if (queueReferenceField) {
         var ga = new GlideAjax('sn_walkup.LTU_WalkUpUtilClient');
         ga.addParam('sysparm_name', 'getQueueReasons');
         ga.addParam('sysparm_queueId', queueReferenceField);
+		//ga.addParam('sysparm_reason', g_form.getValue('u_reason'));
         ga.getXMLAnswer(function(answer) {
             if (answer) {
+                gel('selected-query').value = answer;
+
+                // set lookup value from the answer retrieved
                 var reasonRefBtn = gel('lookup.reason_reference');
-
                 reasonRefBtn.setAttribute('onclick', "mousePositionSave(event);reflistOpen( 'reason_reference', 'not', gel('reason_referenceTABLE').value, '', 'false', 'QUERY:" + answer + "','" + answer + "','')");
-                var locationReferenceField = gel('selected-queue');
-                queueReferenceField.value = answer;
             }
-
         });
-    }
+    } else
+        gel('route-button').classList.add('disabled');
 }
 
 function setReason(elem) {
     var reasonReferenceField = elem.value;
+    var trnsBtn = gel('route-button');
+    if (!reasonReferenceField) {
+        var reasons = gel('selected-query').value;
+        // set lookup value from the answer retrieved
+        var reasonRefBtn = gel('lookup.reason_reference');
+        reasonRefBtn.setAttribute('onclick', "mousePositionSave(event);reflistOpen( 'reason_reference', 'not', gel('reason_referenceTABLE').value, '', 'false', 'QUERY:" + reasons + "','" + reasons + "','')");
+    }
+
     gel('selected-reason').value = reasonReferenceField;
     //Enable transfer button
-    if (reasonReferenceField && gel('selected-queue').value) {
-        var trnsBtn = gel('route-button');
-        trnsBtn.classList.remove("disabled");
-    }
+    if (!reasonReferenceField || !gel('selected-queue').value)
+        trnsBtn.classList.add("disabled");
+    else
+        trnsBtn.classList.remove('disabled');
 }
 
 function routeInteraction() {
